@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+      body {
+         background-color: #f8f9fa;
+      }
+      .chat-container {
+         max-width: 600px;
+         margin: 50px auto;
+         background: white;
+         padding: 20px;
+         border-radius: 10px;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      #chat {
+         height: 300px;
+         overflow-y: auto;
+         border: 1px solid #dee2e6;
+         padding: 10px;
+         margin-bottom: 20px;
+         background-color: #f1f1f1;
+         border-radius: 5px;
+      }
+      .message-avatar {
+         width: 40px;
+         height: 40px;
+         object-fit: cover;
+         border-radius: 50%;
+         margin-right: 10px;
+      }
+    </style>
+    <script>
+        var currentUser = {{ username|tojson }};
+        function updateMessages() {
+            fetch('/messages')
+                .then(response => response.json())
+                .then(data => {
+                    let chatDiv = document.getElementById('chat');
+                    chatDiv.innerHTML = '';
+                    data.forEach(function(msg) {
+                        let msgDiv = document.createElement('div');
+                        msgDiv.classList.add('mb-2', 'd-flex', 'align-items-center');
+                        if (msg.avatar) {
+                            let img = document.createElement('img');
+                            img.src = '/static/avatars/' + msg.avatar;
+                            img.classList.add('message-avatar');
+                            msgDiv.appendChild(img);
+                        }
+                        let span = document.createElement('span');
+                        let displayName = msg.username;
+                        if (msg.username === currentUser) {
+                            displayName += " (вы)";
+                        }
+                        span.innerHTML = '<strong>' + displayName + ':</strong> ' + msg.message;
+                        msgDiv.appendChild(span);
+                        chatDiv.appendChild(msgDiv);
+                    });
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                });
+        }
+        setInterval(updateMessages, 1000);
+    </script>
+</head>
+<body>
+    <div class="container mt-3">
+        <div class="d-flex justify-content-end mb-2">
+            <a href="/settings" class="btn btn-secondary">Настройки</a>
+        </div>
+    </div>
+    <div class="chat-container">
+       <h2 class="text-center">Общий чат</h2>
+       <div id="chat"></div>
+       <form method="post" action="/send">
+           <div class="form-group">
+             <input type="text" class="form-control" name="message" placeholder="Введите сообщение..." required>
+           </div>
+           <button type="submit" class="btn btn-success btn-block">Отправить</button>
+       </form>
+    </div>
+</body>
+</html>
